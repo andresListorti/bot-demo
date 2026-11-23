@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script>try{var t=localStorage.getItem("theme");if(!t)t=matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";document.documentElement.dataset.theme=t}catch(e){document.documentElement.dataset.theme="dark"}</script>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Studio Luna</title>
+<style>
+:root{color-scheme:dark;--bg:#0b141a;--panel:#111b21;--line:#222d34;--in:#202c33;--out:#005c4b;--text:#e9edef;--mute:#8696a0;--accent:#00a884;--warn:#b45309}
+:root[data-theme="light"]{color-scheme:light;--bg:#efeae2;--panel:#fff;--line:#d9dbd5;--in:#f0f2f5;--out:#d9fdd3;--text:#111b21;--mute:#667781}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;font:15px/1.4 system-ui,sans-serif;background:var(--bg);color:var(--text);-webkit-text-size-adjust:100%}
+main{display:grid;grid-template-columns:minmax(0,420px) minmax(0,1fr);gap:16px;max-width:1000px;margin:0 auto;padding:16px;min-height:100%}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;display:flex;flex-direction:column;overflow:hidden}
+header{padding:12px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px}
+header b{display:block}header small{color:var(--mute)}
+.av{width:36px;height:36px;border-radius:50%;background:var(--accent);display:grid;place-items:center;color:#fff;font-weight:700;flex:none}
+.hl{min-width:0;flex:1}.hl small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hb{border:1px solid var(--line);background:transparent;color:var(--text);border-radius:8px;min-height:36px;min-width:36px;padding:0 10px;cursor:pointer;font:inherit;font-size:13px}
+#log{height:430px;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:6px;overscroll-behavior:contain}
+.m{max-width:82%;padding:7px 10px;border-radius:8px;white-space:pre-wrap;overflow-wrap:anywhere}
+.m.in{background:var(--in);align-self:flex-start}.m.out{background:var(--out);align-self:flex-end}
+.m.sys{align-self:center;color:var(--mute);font-size:12px;background:none}.m.typing{color:var(--mute);font-style:italic}
+.chips{display:flex;flex-wrap:wrap;gap:6px;padding:8px 14px 0}
+.chips button{border:1px solid var(--line);background:transparent;color:var(--text);border-radius:999px;padding:7px 13px;min-height:36px;cursor:pointer;font:inherit;font-size:14px}
+form{display:flex;gap:8px;padding:12px 14px}
+input{flex:1;min-width:0;border:1px solid var(--line);background:var(--bg);color:var(--text);border-radius:999px;padding:10px 14px;font:inherit;font-size:16px}
+.send{border:0;background:var(--accent);color:#fff;border-radius:999px;padding:0 18px;min-height:42px;font:inherit;cursor:pointer}
+h2{margin:0;padding:12px 14px;font-size:15px;border-bottom:1px solid var(--line)}
+.sec{padding:10px 14px;border-bottom:1px solid var(--line)}
+.sec h3{margin:0 0 6px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
+.row{padding:6px 0;border-top:1px dashed var(--line)}.row:first-of-type{border-top:0}
+.empty{color:var(--mute)}
+.note{padding:10px 14px;color:var(--mute);font-size:12px}
+.tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:999px;background:var(--accent);color:#fff;margin-left:6px}
+.tag.warn{background:var(--warn)}
+.tabs{display:none}
+.dot[hidden]{display:none!important}
+@media (max-width:760px){
+  body{overflow:hidden}
+  main{display:flex;flex-direction:column;gap:0;padding:0;height:100dvh;min-height:0;max-width:none}
+  .card{border-radius:0;border-width:0 0 1px;flex:1;min-height:0}
+  main[data-view="chat"] #biz,main[data-view="biz"] #chat{display:none}
+  #log{flex:1;height:auto;padding:12px}
+  #biz{overflow:auto}
+  .m{max-width:88%}
+  .chips{flex-wrap:nowrap;overflow-x:auto;padding:8px 12px 0;scrollbar-width:none}.chips button{flex:none}
+  form{padding:10px 12px calc(10px + env(safe-area-inset-bottom))}
+  header{padding-top:calc(10px + env(safe-area-inset-top))}
+  .tabs{display:flex;border-top:1px solid var(--line);background:var(--panel);padding-bottom:env(safe-area-inset-bottom)}
+  .tabs button{flex:1;border:0;background:transparent;color:var(--mute);min-height:48px;font:inherit;font-weight:600;cursor:pointer;border-top:3px solid transparent}
+  .tabs button[aria-selected="true"]{color:var(--accent);border-top-color:var(--accent)}
+  .dot{display:inline-block;min-width:18px;padding:0 5px;margin-left:6px;border-radius:999px;background:var(--accent);color:#fff;font-size:11px;line-height:18px}
+}
+</style>
+</head>
+<body>
+<main data-view="chat">
+  <section class="card" id="chat" aria-label="Chat">
+    <header><div class="av" id="av">L</div><div class="hl"><b id="bname">Business</b><small id="status"></small></div><button class="hb" id="restart" type="button"></button><button class="hb" id="lang" type="button"></button><button class="hb" id="theme" type="button" aria-label="Toggle light/dark theme"></button></header>
+    <div id="log" role="log" aria-live="polite"></div>
+    <div class="chips" id="chips"></div>
+    <form id="form"><input id="msg" autocomplete="off" aria-label="Message"><button class="send" type="submit"></button></form>
+  </section>
+  <section class="card" id="biz" aria-label="Business view">
+    <h2 id="bizTitle"></h2>
+    <div class="sec"><h3 id="h-b"></h3><div id="bookings" class="empty"></div></div>
+    <div class="sec"><h3 id="h-l"></h3><div id="leads" class="empty"></div></div>
+    <div class="sec"><h3 id="h-h"></h3><div id="handoffs" class="empty"></div></div>
+    <p class="note" id="note"></p>
+  </section>
+  <nav class="tabs" role="tablist"><button id="tab-chat" role="tab" aria-selected="true" type="button">Chat</button><button id="tab-biz" role="tab" aria-selected="false" type="button"><span id="tabBizLabel">Business</span><span class="dot" id="dot" hidden>0</span></button></nav>
+</main>
+<script src="bot.js"></script>
+<script src="config.js"></script>
+<script>
+(function () {
+  var B = window.BUSINESS;
+  // Edits made in admin.html are saved in this browser and win over the delivered config.js.
+  try { var saved = JSON.parse(localStorage.getItem('botConfig:' + B.id) || 'null'); if (saved) B = Object.assign({}, B, saved); } catch (e) {}
+  var lang = B.defaultLang || 'en', bot, today = new Date(), timers = [], unseen = 0;
+  var log = document.getElementById('log'), msg = document.getElementById('msg'), main = document.querySelector('main');
+  var dot = document.getElementById('dot');
+  var UI = {
+    en: { ph: 'Type a message', send: 'Send', chips: ['Hi', 'Book', 'Prices', 'Hours', 'Human'], none: ['No bookings yet.', 'No leads yet.', 'None.'], btn: 'ES', typing: 'typing…', restart: 'Restart', status: 'online · automated assistant', biz: 'What the business sees', h: ['Bookings', 'Leads captured', 'Handed to a person'], person: 'needs a person', tab: 'Business', sim: 'Simulated conversation: fictional demo',
+      note: 'Simulated chat for a fictional business. No real WhatsApp connection, no AI model and no network calls: answers come from fixed rules, so they cannot invent prices or hours. A live version connects to the WhatsApp Business API, a calendar and your CRM.' },
+    es: { ph: 'Escribí un mensaje', send: 'Enviar', chips: ['Hola', 'Turno', 'Precios', 'Horarios', 'Persona'], none: ['Todavía no hay turnos.', 'Todavía no hay contactos.', 'Ninguno.'], btn: 'EN', typing: 'escribiendo…', restart: 'Reiniciar', status: 'en línea · asistente automático', biz: 'Lo que ve el negocio', h: ['Turnos', 'Contactos captados', 'Pasados a una persona'], person: 'necesita una persona', tab: 'Negocio', sim: 'Conversación simulada: demo ficticia',
+      note: 'Chat simulado de un negocio ficticio. Sin conexión real a WhatsApp, sin modelo de IA y sin llamadas de red: las respuestas salen de reglas fijas, así que no pueden inventar precios ni horarios. La versión real se conecta a la API de WhatsApp Business, a un calendario y a tu CRM.' },
+  };
+  var data = { bookings: [], leads: [], handoffs: 0 };
+
+  document.documentElement.style.setProperty('--accent', B.accent);
+  document.title = B.name + ' · ' + 'booking assistant demo';
+  document.getElementById('av').textContent = B.initial || B.name.charAt(0);
+  document.getElementById('bname').textContent = B.name;
+
+  function add(text, cls) {
+    var d = document.createElement('div'); d.className = 'm ' + cls;
+    text.split(/\*([^*]+)\*/).forEach(function (part, i) {
+      if (i % 2) { var b = document.createElement('b'); b.textContent = part; d.appendChild(b); }
+      else d.appendChild(document.createTextNode(part));
+    });
+    log.appendChild(d); log.scrollTop = log.scrollHeight; return d;
+  }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+
+  function renderPanel() {
+    var u = UI[lang];
+    document.getElementById('bookings').innerHTML = data.bookings.length ? data.bookings.map(function (b) {
+      return '<div class="row"><b>' + esc(b.name) + '</b> · ' + esc(b.service) + ' ' + esc(B.currency) + b.price + '<br>' + esc(b.day) + ' ' + esc(b.time) + ' · ' + esc(b.phone) + '</div>';
+    }).join('') : u.none[0];
+    document.getElementById('leads').innerHTML = data.leads.length ? data.leads.map(function (l) {
+      return '<div class="row">' + esc(l.name) + ' · ' + esc(l.phone) + '<span class="tag">' + esc(l.source) + '</span></div>';
+    }).join('') : u.none[1];
+    document.getElementById('handoffs').innerHTML = data.handoffs ? '<div class="row">' + data.handoffs + ' <span class="tag warn">' + u.person + '</span></div>' : u.none[2];
+  }
+
+  function applyEvents(events) {
+    events.forEach(function (e) {
+      if (e.type === 'booking') data.bookings.push(e.booking);
+      if (e.type === 'lead') data.leads.push(e.lead);
+      if (e.type === 'handoff') data.handoffs += 1;
+      if (e.type === 'cancelled') data.bookings = data.bookings.filter(function (b) { return b !== e.booking; });
+    });
+    renderPanel();
+    if (events.length && main.dataset.view === 'chat') { unseen += events.length; dot.textContent = unseen; dot.hidden = false; }
+  }
+
+  function setChips(list) {
+    var chips = document.getElementById('chips');
+    chips.innerHTML = '';
+    (list || UI[lang].chips).forEach(function (c) {
+      var b = document.createElement('button'); b.type = 'button'; b.textContent = c;
+      b.onclick = function () { send(c); }; chips.appendChild(b);
+    });
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function reply(res) {
+    var typing = null, t = 0;
+    res.replies.forEach(function (r) {
+      timers.push(setTimeout(function () { typing = add(UI[lang].typing, 'in typing'); }, t));
+      t += 500 + Math.min(r.length * 8, 700);
+      timers.push(setTimeout(function () { if (typing) typing.remove(); add(r, 'in'); }, t));
+    });
+    timers.push(setTimeout(function () { setChips(res.choices); applyEvents(res.events); }, t));
+  }
+
+  function send(text) {
+    if (!text.trim()) return;
+    document.getElementById('chips').innerHTML = '';
+    add(text, 'out');
+    reply(bot.handle(text));
+  }
+
+  function view(v) {
+    main.dataset.view = v;
+    document.getElementById('tab-chat').setAttribute('aria-selected', v === 'chat');
+    document.getElementById('tab-biz').setAttribute('aria-selected', v === 'biz');
+    if (v === 'biz') { unseen = 0; dot.hidden = true; } else log.scrollTop = log.scrollHeight;
+  }
+
+  function start() {
+    var u = UI[lang];
+    timers.forEach(clearTimeout); timers = [];
+    log.innerHTML = '';
+    data = { bookings: [], leads: [], handoffs: 0 };
+    bot = StudioBot.createBot({ business: B, today: today, lang: lang });
+    document.documentElement.lang = lang;
+    msg.placeholder = u.ph;
+    document.querySelector('.send').textContent = u.send;
+    document.getElementById('lang').textContent = u.btn;
+    document.getElementById('restart').textContent = '↻';
+    document.getElementById('restart').setAttribute('aria-label', u.restart);
+    document.getElementById('restart').title = u.restart;
+    document.getElementById('status').textContent = u.status;
+    document.getElementById('bizTitle').textContent = u.biz;
+    document.getElementById('h-b').textContent = u.h[0];
+    document.getElementById('h-l').textContent = u.h[1];
+    document.getElementById('h-h').textContent = u.h[2];
+    document.getElementById('note').textContent = u.note;
+    document.getElementById('tabBizLabel').textContent = u.tab;
+    setChips(null);
+    add(u.sim, 'sys');
+    renderPanel();
+    reply(bot.handle(lang === 'es' ? 'hola' : 'hi'));
+  }
+
+  var themeBtn = document.getElementById('theme');
+  function paintTheme() { themeBtn.textContent = document.documentElement.dataset.theme === 'dark' ? '☀' : '☾'; }
+  themeBtn.addEventListener('click', function () {
+    var t = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = t;
+    try { localStorage.setItem('theme', t); } catch (e) {}
+    paintTheme();
+  });
+
+  document.getElementById('form').addEventListener('submit', function (e) { e.preventDefault(); send(msg.value); msg.value = ''; });
+  document.getElementById('lang').addEventListener('click', function () { lang = lang === 'en' ? 'es' : 'en'; start(); });
+  document.getElementById('restart').addEventListener('click', start);
+  document.getElementById('tab-chat').onclick = function () { view('chat'); };
+  document.getElementById('tab-biz').onclick = function () { view('biz'); };
+  paintTheme();
+  start();
+})();
+</script>
+</body>
+</html>

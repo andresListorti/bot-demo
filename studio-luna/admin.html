@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script>try{var t=localStorage.getItem("theme");if(!t)t=matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";document.documentElement.dataset.theme=t}catch(e){document.documentElement.dataset.theme="dark"}</script>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Assistant settings</title>
+<style>
+:root{color-scheme:dark;--bg:#0b141a;--panel:#111b21;--line:#222d34;--text:#e9edef;--mute:#8696a0;--accent:#00a884;--bad:#f87171}
+:root[data-theme="light"]{color-scheme:light;--bg:#efeae2;--panel:#fff;--line:#d9dbd5;--text:#111b21;--mute:#667781;--bad:#b91c1c}
+*{box-sizing:border-box}
+body{margin:0;font:15px/1.4 system-ui,sans-serif;background:var(--bg);color:var(--text)}
+.wrap{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:16px;max-width:1100px;margin:0 auto;padding:16px}
+@media (max-width:860px){.wrap{grid-template-columns:1fr}.preview{order:-1}.preview iframe{height:420px}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+h1{font-size:18px;margin:0}h2{font-size:14px;margin:0 0 10px;color:var(--mute);text-transform:uppercase;letter-spacing:.05em}
+top,.top{display:flex;align-items:center;gap:8px;max-width:1100px;margin:0 auto;padding:12px 16px 0}
+.top h1{flex:1}
+label{display:block;font-size:13px;color:var(--mute);margin:8px 0 3px}
+input,textarea,select{width:100%;border:1px solid var(--line);background:var(--bg);color:var(--text);border-radius:8px;padding:9px 10px;font:inherit;font-size:16px}
+textarea{min-height:64px;resize:vertical}
+input[type=color]{padding:2px;height:40px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:520px){.two{grid-template-columns:1fr}}
+.item{border:1px dashed var(--line);border-radius:10px;padding:10px;margin-bottom:10px}
+.svc{display:grid;grid-template-columns:1fr 1fr 80px 80px auto;gap:6px;margin-bottom:10px;align-items:end}
+.svc small{display:block;color:var(--mute);font-size:11px;margin-bottom:2px}
+@media (max-width:620px){.svc{grid-template-columns:1fr 1fr;border-bottom:1px dashed var(--line);padding-bottom:10px}}
+button{border:1px solid var(--line);background:transparent;color:var(--text);border-radius:8px;min-height:40px;padding:0 14px;font:inherit;cursor:pointer}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.days{display:flex;flex-wrap:wrap;gap:10px}.days label{display:flex;gap:5px;align-items:center;margin:0;color:var(--text)}.days input{width:auto}
+.bar{position:sticky;bottom:0;background:var(--panel);border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom));display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+#errs{color:var(--bad);font-size:13px;white-space:pre-wrap}#ok{color:var(--accent);font-size:13px}
+iframe{width:100%;height:620px;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+.note{color:var(--mute);font-size:12px}
+</style>
+</head>
+<body>
+<div class="top"><h1 id="title">Assistant settings</h1><a href="index.html" style="color:var(--accent)">Open chat</a><button id="theme" type="button" aria-label="Toggle light/dark theme"></button></div>
+<div class="wrap">
+  <div>
+    <div class="card"><h2>Business</h2>
+      <label for="name">Name</label><input id="name">
+      <div class="two"><div><label for="accent">Brand colour</label><input id="accent" type="color"></div>
+      <div><label for="defaultLang">Main language</label><select id="defaultLang"><option value="en">English</option><option value="es">Español</option></select></div></div>
+      <label>Open days</label><div class="days" id="days"></div>
+      <label for="slots">Appointment times (comma separated, 24h)</label><input id="slots" placeholder="10:00, 12:30, 16:00">
+    </div>
+    <div class="card"><h2>Answers</h2>
+      <div class="two"><div><label for="hours-en">Opening hours (EN)</label><textarea id="hours-en"></textarea></div><div><label for="hours-es">Horarios (ES)</label><textarea id="hours-es"></textarea></div></div>
+      <div class="two"><div><label for="address-en">Address (EN)</label><textarea id="address-en"></textarea></div><div><label for="address-es">Dirección (ES)</label><textarea id="address-es"></textarea></div></div>
+      <div class="two"><div><label for="hand-en">Message when passing to a person (EN)</label><textarea id="hand-en"></textarea></div><div><label for="hand-es">Mensaje al pasar a una persona (ES)</label><textarea id="hand-es"></textarea></div></div>
+    </div>
+    <div class="card"><h2>Services and prices</h2><div id="svcs"></div><button id="addSvc" type="button">+ Add service</button></div>
+    <div class="card"><h2>Custom answers (FAQ)</h2>
+      <p class="note">When a customer's message contains one of the keywords, the assistant sends your answer. Separate keywords with commas.</p>
+      <div id="faqs"></div><button id="addFaq" type="button">+ Add answer</button></div>
+    <div class="card"><div id="errs"></div><div id="ok"></div>
+      <p class="note">Saved changes live in this browser. To put them on your live assistant, download the config file and send it to your provider (or replace config.js yourself).</p></div>
+  </div>
+  <aside class="preview"><iframe id="pv" src="index.html" title="Live preview"></iframe></aside>
+</div>
+<div class="bar"><button id="save" class="primary" type="button">Save and refresh preview</button><button id="dl" type="button">Download config.js</button><button id="reset" type="button">Undo my changes</button></div>
+<script src="bot.js"></script>
+<script src="config.js"></script>
+<script>
+(function () {
+  var BASE = window.BUSINESS, KEY = 'botConfig:' + BASE.id;
+  var cur;
+  try { cur = Object.assign({}, BASE, JSON.parse(localStorage.getItem(KEY) || 'null') || {}); } catch (e) { cur = Object.assign({}, BASE); }
+  cur = JSON.parse(JSON.stringify(cur));
+  var $ = function (id) { return document.getElementById(id); };
+  var DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  function csv(s) { return s.split(',').map(function (x) { return x.trim(); }).filter(Boolean); }
+
+  function drawDays() {
+    $('days').innerHTML = '';
+    DAYS.forEach(function (d, i) {
+      var l = document.createElement('label'), c = document.createElement('input');
+      c.type = 'checkbox'; c.checked = (cur.openDays || []).indexOf(i) >= 0; c.dataset.day = i;
+      l.appendChild(c); l.appendChild(document.createTextNode(d)); $('days').appendChild(l);
+    });
+  }
+  function svcRow(s) {
+    var r = document.createElement('div'); r.className = 'svc';
+    r.innerHTML = '<div><small>Name EN</small><input aria-label="Service name EN"></div><div><small>Nombre ES</small><input aria-label="Service name ES"></div><div><small>Price</small><input type="number" min="0" aria-label="Price"></div><div><small>Minutes</small><input type="number" min="1" aria-label="Minutes"></div><button type="button" aria-label="Remove service">✕</button>';
+    var f = r.querySelectorAll('input');
+    f[0].value = s.en || ''; f[1].value = s.es || ''; f[2].value = s.price == null ? '' : s.price; f[3].value = s.min || '';
+    r.dataset.id = s.id || '';
+    r.querySelector('button').onclick = function () { r.remove(); };
+    return r;
+  }
+  function faqItem(f) {
+    var d = document.createElement('div'); d.className = 'item';
+    d.innerHTML = '<label>Keywords EN</label><input><label>Palabras clave ES</label><input><div class="two"><div><label>Answer EN</label><textarea></textarea></div><div><label>Respuesta ES</label><textarea></textarea></div></div><button type="button">Remove</button>';
+    var i = d.querySelectorAll('input'), t = d.querySelectorAll('textarea');
+    i[0].value = ((f.keywords && f.keywords.en) || []).join(', '); i[1].value = ((f.keywords && f.keywords.es) || []).join(', ');
+    t[0].value = (f.answer && f.answer.en) || ''; t[1].value = (f.answer && f.answer.es) || '';
+    d.querySelector('button').onclick = function () { d.remove(); };
+    return d;
+  }
+
+  function fill() {
+    $('title').textContent = cur.name + ' · settings';
+    $('name').value = cur.name; $('accent').value = cur.accent; $('defaultLang').value = cur.defaultLang || 'en';
+    $('slots').value = (cur.slots || []).join(', ');
+    $('hours-en').value = cur.hours.en; $('hours-es').value = cur.hours.es;
+    $('address-en').value = cur.address.en; $('address-es').value = cur.address.es;
+    $('hand-en').value = (cur.handoffNote && cur.handoffNote.en) || ''; $('hand-es').value = (cur.handoffNote && cur.handoffNote.es) || '';
+    drawDays();
+    $('svcs').innerHTML = ''; (cur.services || []).forEach(function (s) { $('svcs').appendChild(svcRow(s)); });
+    $('faqs').innerHTML = ''; (cur.faqs || []).forEach(function (f) { $('faqs').appendChild(faqItem(f)); });
+  }
+
+  function read() {
+    var out = Object.assign({}, cur);
+    out.name = $('name').value.trim(); out.accent = $('accent').value; out.defaultLang = $('defaultLang').value;
+    out.openDays = [].slice.call($('days').querySelectorAll('input:checked')).map(function (c) { return +c.dataset.day; });
+    out.slots = csv($('slots').value);
+    out.hours = { en: $('hours-en').value.trim(), es: $('hours-es').value.trim() };
+    out.address = { en: $('address-en').value.trim(), es: $('address-es').value.trim() };
+    var he = $('hand-en').value.trim(), hs = $('hand-es').value.trim();
+    if (he || hs) out.handoffNote = { en: he, es: hs }; else delete out.handoffNote;
+    out.services = [].slice.call($('svcs').children).map(function (r, n) {
+      var f = r.querySelectorAll('input');
+      return { id: r.dataset.id || ('svc' + (n + 1)), en: f[0].value.trim(), es: f[1].value.trim(), price: f[2].value === '' ? NaN : +f[2].value, min: f[3].value === '' ? NaN : +f[3].value };
+    });
+    out.faqs = [].slice.call($('faqs').children).map(function (d) {
+      var i = d.querySelectorAll('input'), t = d.querySelectorAll('textarea');
+      return { keywords: { en: csv(i[0].value), es: csv(i[1].value) }, answer: { en: t[0].value.trim(), es: t[1].value.trim() } };
+    });
+    return out;
+  }
+
+  function check() {
+    var next = read(), errs = StudioBot.validateConfig(next);
+    $('errs').textContent = errs.length ? 'Fix before saving:\n- ' + errs.join('\n- ') : '';
+    $('ok').textContent = '';
+    return errs.length ? null : next;
+  }
+
+  $('addSvc').onclick = function () { $('svcs').appendChild(svcRow({})); };
+  $('addFaq').onclick = function () { $('faqs').appendChild(faqItem({})); };
+  $('save').onclick = function () {
+    var next = check(); if (!next) return;
+    cur = next;
+    try { localStorage.setItem(KEY, JSON.stringify(cur)); $('ok').textContent = 'Saved. Preview refreshed.'; }
+    catch (e) { $('ok').textContent = 'Could not save in this browser. Use Download instead.'; }
+    $('pv').contentWindow.location.reload();
+  };
+  $('dl').onclick = function () {
+    var next = check(); if (!next) return;
+    var body = '// Delivered config for ' + next.name + '. Replace config.js with this file.\n' +
+      '(function (root, factory) {\n  if (typeof module === \'object\' && module.exports) module.exports = factory();\n  else root.BUSINESS = factory();\n})(typeof self !== \'undefined\' ? self : this, function () {\n  return ' + JSON.stringify(next, null, 2) + ';\n});\n';
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([body], { type: 'text/javascript' })); a.download = 'config.js';
+    document.body.appendChild(a); a.click(); a.remove();
+  };
+  $('reset').onclick = function () {
+    try { localStorage.removeItem(KEY); } catch (e) {}
+    cur = JSON.parse(JSON.stringify(BASE)); fill(); $('errs').textContent = ''; $('ok').textContent = 'Back to the delivered settings.';
+    $('pv').contentWindow.location.reload();
+  };
+  var themeBtn = $('theme');
+  function paint() { themeBtn.textContent = document.documentElement.dataset.theme === 'dark' ? '☀' : '☾'; }
+  themeBtn.onclick = function () {
+    var t = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = t;
+    try { localStorage.setItem('theme', t); } catch (e) {}
+    paint();
+  };
+  paint(); fill();
+})();
+</script>
+</body>
+</html>

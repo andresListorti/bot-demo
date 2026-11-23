@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Booking assistant demos</title>
+<style>
+:root{color-scheme:dark light;--bg:#0b141a;--panel:#111b21;--line:#222d34;--text:#e9edef;--mute:#8696a0;--accent:#00a884}
+@media (prefers-color-scheme:light){:root{--bg:#efeae2;--panel:#fff;--line:#d9dbd5;--text:#111b21;--mute:#667781;--accent:#008069}}
+body{margin:0;font:16px/1.5 system-ui,sans-serif;background:var(--bg);color:var(--text)}
+main{max-width:680px;margin:0 auto;padding:24px 16px}
+h1{font-size:24px;margin:0 0 8px}p{color:var(--mute)}
+.card{display:block;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin:12px 0;color:var(--text);text-decoration:none}
+.card b{display:block;font-size:17px}.card span{color:var(--mute);font-size:14px}.card:hover{border-color:var(--accent)}
+small{color:var(--mute)}
+</style></head><body><main>
+<h1>WhatsApp-style booking assistant</h1>
+<p>One engine, one config per business. Books appointments, answers prices and hours, captures leads and hands off to a person. Simulated chat: no AI model, no network calls, so it cannot invent prices or hours.</p>
+<a class="card" href="studio-luna/index.html"><b>Studio Luna: hair salon</b><span>English-first demo. Open the chat, then the "Business" tab to see bookings and leads.</span></a>
+<a class="card" href="clinica-sol/index.html"><b>Clínica Dental Sol: dental clinic</b><span>Demo en español, mismo motor con otra configuración.</span></a>
+<a class="card" href="clinica-sol/admin.html"><b>Client settings panel</b><span>Where a business edits hours, prices and custom answers, with a live preview.</span></a>
+<p><small>Fictional businesses and addresses. A live version connects to the WhatsApp Business API, a calendar and a CRM.</small></p>
+</main></body></html>
